@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JavaScript Async — Complete Guide</title>
+<style>
+  /* ── Tokens ─────────────────────────────────────────── */
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --border:    #30363d;
+    --text:      #e6edf3;
+    --muted:     #8b949e;
+    --yellow:    #e3b341;
+    --green:     #3fb950;
+    --blue:      #58a6ff;
+    --purple:    #bc8cff;
+    --red:       #f85149;
+    --orange:    #ffa657;
+    --teal:      #39d353;
+    --tag-bg:    #21262d;
+    --radius:    10px;
+  }
+
+  /* ── Reset ───────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    padding: 0 0 80px;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+  header .badge {
+    display: inline-block;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  header h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    color: #fff;
+    line-height: 1.15;
+  }
+  header h1 span { color: var(--yellow); }
+  header p {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 17px;
+    max-width: 560px;
+    margin-inline: auto;
+  }
+
+  /* ── Nav pills ───────────────────────────────────────── */
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px 16px 0;
+  }
+  nav a {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 20px;
+    transition: all .15s;
+  }
+  nav a:hover { color: var(--text); border-color: var(--blue); }
+
+  /* ── Layout ─────────────────────────────────────────── */
+  main {
+    max-width: 860px;
+    margin: 48px auto 0;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+
+  /* ── Section card ────────────────────────────────────── */
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  .section-header .kw {
+    margin-left: auto;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .section-body { padding: 24px 28px; }
+
+  /* Colour themes per section */
+  .cb  .section-num { background: #2d1f0e; color: var(--orange); }
+  .cb  .section-header h2 { color: var(--orange); }
+  .cb  .kw  { background: #2d1f0e; color: var(--orange); }
+
+  .np  .section-num { background: #1a1f3a; color: var(--blue); }
+  .np  .section-header h2 { color: var(--blue); }
+  .np  .kw  { background: #1a1f3a; color: var(--blue); }
+
+  .as  .section-num { background: #1a2a1a; color: var(--green); }
+  .as  .section-header h2 { color: var(--green); }
+  .as  .kw  { background: #1a2a1a; color: var(--green); }
+
+  .aw  .section-num { background: #221a3a; color: var(--purple); }
+  .aw  .section-header h2 { color: var(--purple); }
+  .aw  .kw  { background: #221a3a; color: var(--purple); }
+
+  .pa  .section-num { background: #1a2a2a; color: var(--teal); }
+  .pa  .section-header h2 { color: var(--teal); }
+  .pa  .kw  { background: #1a2a2a; color: var(--teal); }
+
+  .pr  .section-num { background: #2a1a1a; color: var(--red); }
+  .pr  .section-header h2 { color: var(--red); }
+  .pr  .kw  { background: #2a1a1a; color: var(--red); }
+
+  /* ── Prose ───────────────────────────────────────────── */
+  .section-body p { color: #c9d1d9; margin-bottom: 16px; }
+  .section-body p:last-child { margin-bottom: 0; }
+  .section-body strong { color: var(--text); font-weight: 600; }
+  .section-body em { color: var(--yellow); font-style: normal; font-weight: 500; }
+
+  /* ── Sub-headings ────────────────────────────────────── */
+  .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 10px;
+  }
+  .label:first-child { margin-top: 0; }
+
+  /* ── Code blocks ─────────────────────────────────────── */
+  .code-wrap {
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 10px 0 20px;
+    font-size: 13.5px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    line-height: 1.65;
+  }
+  .code-wrap .file-label {
+    background: var(--tag-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 14px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+  pre { padding: 18px 20px; overflow-x: auto; white-space: pre; }
+
+  /* syntax colours */
+  .k  { color: var(--purple); }   /* keyword */
+  .fn { color: var(--blue);   }   /* function name */
+  .s  { color: var(--green);  }   /* string */
+  .c  { color: var(--muted);  }   /* comment */
+  .n  { color: var(--orange); }   /* number / bool */
+  .m  { color: var(--yellow); }   /* method call */
+  .e  { color: var(--red);    }   /* error keyword */
+
+  /* ── Output block ────────────────────────────────────── */
+  .output-wrap {
+    background: #0a0e13;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--teal);
+    border-radius: 8px;
+    margin: 10px 0 20px;
+    overflow: hidden;
+  }
+  .output-wrap .file-label {
+    background: #111820;
+    border-bottom: 1px solid var(--border);
+    padding: 6px 14px;
+    font-size: 11px;
+    color: var(--teal);
+    letter-spacing: .04em;
+  }
+  .output-wrap pre {
+    color: var(--teal);
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 13px;
+    padding: 14px 20px;
+  }
+  .out-muted { color: var(--muted); }
+  .out-red   { color: var(--red);   }
+  .out-yel   { color: var(--yellow);}
+
+  /* ── Callout boxes ───────────────────────────────────── */
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 14.5px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout.warn  { background: #2a1f0a; border-left: 3px solid var(--yellow); }
+  .callout.info  { background: #0d1a2a; border-left: 3px solid var(--blue);   }
+  .callout.good  { background: #0d1f0d; border-left: 3px solid var(--green);  }
+  .callout.danger{ background: #1f0a0a; border-left: 3px solid var(--red);    }
+  .callout p     { color: var(--text); margin: 0; }
+
+  /* ── Comparison grid ─────────────────────────────────── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .compare-box {
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+  }
+  .compare-box .title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .compare-box.ok  .title { color: var(--green); }
+  .compare-box.bad .title { color: var(--red);   }
+
+  /* ── Playwright banner ───────────────────────────────── */
+  .pw-banner {
+    background: linear-gradient(135deg, #0d2a1f, #0a1a2a);
+    border: 1px solid #2a4a3a;
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-top: 56px;
+  }
+  .pw-banner h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--teal);
+    margin-bottom: 10px;
+  }
+  .pw-banner p { color: #c9d1d9; font-size: 15px; line-height: 1.7; }
+
+  /* ── Flow diagram ────────────────────────────────────── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+    font-size: 13px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+  }
+  .flow-box {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: var(--text);
+  }
+  .flow-arr { color: var(--muted); }
+
+  @media (max-width: 600px) {
+    .section-body { padding: 18px; }
+    .section-header { padding: 16px 18px; }
+    .compare { grid-template-columns: 1fr; }
+    .section-header .kw { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">JavaScript Reference</div>
+  <h1>Async JavaScript<br><span>The Complete Mental Model</span></h1>
+  <p>JavaScript is single-threaded — but it never freezes. Here is exactly how that works, and why each keyword exists.</p>
+</header>
+
+<nav>
+  <a href="#callback">Callback</a>
+  <a href="#promise">new Promise</a>
+  <a href="#async">async</a>
+  <a href="#await">await</a>
+  <a href="#all">Promise.all</a>
+  <a href="#race">Promise.race</a>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════════════════════
+     1. CALLBACK
+═══════════════════════════════════════════════════════ -->
+<section class="cb" id="callback">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>Callback</h2>
+    <span class="kw">function(err, data)</span>
+  </div>
+  <div class="section-body">
+
+    <p>A <strong>callback</strong> is a function you pass into another function, telling it: <em>"when you're done, call this."</em> It is the oldest async pattern in JavaScript — everything else on this page was built to fix its problems.</p>
+
+    <div class="label">How it works — happy path</div>
+    <div class="code-wrap">
+      <div class="file-label">callback-basic.js</div>
+<pre><span class="k">function</span> <span class="fn">fetchData</span>(callback) {
+  <span class="fn">setTimeout</span>(() => {
+    <span class="k">const</span> data = <span class="s">"user_42"</span>;
+    callback(<span class="n">null</span>, data);  <span class="c">// null = no error</span>
+  }, <span class="n">1000</span>);
+}
+
+<span class="fn">fetchData</span>(<span class="k">function</span>(err, data) {
+  <span class="k">if</span> (err) {
+    console.<span class="m">error</span>(<span class="s">"Failed:"</span>, err);
+    <span class="k">return</span>;
+  }
+  console.<span class="m">log</span>(<span class="s">"Got:"</span>, data);  <span class="c">// "Got: user_42"</span>
+});</pre>
+    </div>
+
+    <div class="callout info">
+      <span class="icon">💡</span>
+      <p><strong>Error-first convention.</strong> Node.js standardised this: the callback always receives <code>(err, data)</code>. If something went wrong, <code>err</code> is an Error object and <code>data</code> is undefined. If it succeeded, <code>err</code> is <code>null</code> and <code>data</code> holds the result. This is why you always check <code>err</code> first.</p>
+    </div>
+
+    <div class="label">Why callbacks become painful — three levels deep</div>
+    <p>Real apps need to do things in sequence: fetch a user, then fetch their orders, then fetch each order's items. With callbacks, every step nests one level deeper. This is <em>callback hell</em> — the shape alone tells you something has gone wrong.</p>
+
+    <div class="code-wrap">
+      <div class="file-label">callback-hell.js</div>
+<pre><span class="fn">getUser</span>(<span class="n">1</span>, <span class="k">function</span>(err, user) {
+  <span class="k">if</span> (err) <span class="k">return</span> console.<span class="m">error</span>(err);
+
+  <span class="fn">getOrders</span>(user.id, <span class="k">function</span>(err, orders) {
+    <span class="k">if</span> (err) <span class="k">return</span> console.<span class="m">error</span>(err);
+
+    <span class="fn">getItems</span>(orders[<span class="n">0</span>].id, <span class="k">function</span>(err, items) {
+      <span class="k">if</span> (err) <span class="k">return</span> console.<span class="m">error</span>(err);
+
+      <span class="c">// actual logic buried three layers in</span>
+      console.<span class="m">log</span>(<span class="s">"Items:"</span>, items);
+    });
+  });
+}); <span class="c">// ← notice the pyramid of closing brackets</span></pre>
+    </div>
+
+    <div class="callout danger">
+      <span class="icon">⚠️</span>
+      <p><strong>Three problems that never go away with callbacks:</strong> (1) Error handling must be repeated manually at every single level. (2) The code shape (rightward drift) makes logic hard to follow. (3) You cannot use <code>try/catch</code> — errors cross function boundaries asynchronously and slip right past it. Promises were invented specifically to solve all three of these.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     2. new Promise
+═══════════════════════════════════════════════════════ -->
+<section class="np" id="promise">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>new Promise</h2>
+    <span class="kw">new Promise((resolve, reject) => {})</span>
+  </div>
+  <div class="section-body">
+
+    <p>A <strong>Promise</strong> is an object that represents a value that does not exist yet. It is always in one of three states: <em>pending</em> (waiting), <em>fulfilled</em> (success), or <em>rejected</em> (failure). Once it settles into either fulfilled or rejected, it never changes state again.</p>
+
+    <div class="flow">
+      <div class="flow-box" style="color:var(--yellow)">pending</div>
+      <span class="flow-arr">──→</span>
+      <div class="flow-box" style="color:var(--green)">fulfilled ✓</div>
+      <span class="flow-arr">or</span>
+      <div class="flow-box" style="color:var(--red)">rejected ✗</div>
+    </div>
+
+    <div class="label">Creating a promise</div>
+    <div class="code-wrap">
+      <div class="file-label">new-promise.js</div>
+<pre><span class="k">function</span> <span class="fn">fetchUser</span>(id) {
+  <span class="k">return new</span> <span class="fn">Promise</span>((resolve, reject) => {
+    <span class="fn">setTimeout</span>(() => {
+      <span class="k">if</span> (id > <span class="n">0</span>) {
+        resolve({ id, name: <span class="s">"Alice"</span> });   <span class="c">// success</span>
+      } <span class="k">else</span> {
+        reject(<span class="k">new</span> <span class="e">Error</span>(<span class="s">"Invalid id"</span>));  <span class="c">// failure</span>
+      }
+    }, <span class="n">500</span>);
+  });
+}
+
+<span class="c">// Consuming with .then() / .catch()</span>
+<span class="fn">fetchUser</span>(<span class="n">1</span>)
+  .<span class="m">then</span>(user  => console.<span class="m">log</span>(<span class="s">"User:"</span>, user))
+  .<span class="m">catch</span>(err => console.<span class="m">error</span>(<span class="s">"Error:"</span>, err.<span class="m">message</span>));
+</pre>
+    </div>
+
+    <div class="callout good">
+      <span class="icon">✅</span>
+      <p>Notice how <code>.catch()</code> at the end catches <em>any</em> rejection in the whole chain — you do not need an <code>if (err)</code> check at every step. This is the fundamental improvement over callbacks.</p>
+    </div>
+
+    <div class="label">Chaining — no more pyramid</div>
+    <div class="code-wrap">
+      <div class="file-label">promise-chain.js</div>
+<pre><span class="fn">fetchUser</span>(<span class="n">1</span>)
+  .<span class="m">then</span>(user   => <span class="fn">fetchOrders</span>(user.id))
+  .<span class="m">then</span>(orders => <span class="fn">fetchItems</span>(orders[<span class="n">0</span>].id))
+  .<span class="m">then</span>(items  => console.<span class="m">log</span>(<span class="s">"Items:"</span>, items))
+  .<span class="m">catch</span>(err  => console.<span class="m">error</span>(<span class="s">"Something failed:"</span>, err));</pre>
+    </div>
+
+    <p>The same three-step sequence from the callback hell example — flat, readable, with a single error handler for every step.</p>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     3. async
+═══════════════════════════════════════════════════════ -->
+<section class="as" id="async">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>async</h2>
+    <span class="kw">async function</span>
+  </div>
+  <div class="section-body">
+
+    <p>The <strong><code>async</code></strong> keyword turns a regular function into one that always returns a Promise — even if you return a plain value from it. It is the entry point: you cannot use <code>await</code> unless you are inside an <code>async</code> function.</p>
+
+    <div class="compare">
+      <div class="compare-box bad">
+        <div class="title">Without async</div>
+<pre><span class="k">function</span> <span class="fn">greet</span>() {
+  <span class="k">return</span> <span class="s">"hello"</span>;
+}
+<span class="c">// returns: "hello" (string)</span></pre>
+      </div>
+      <div class="compare-box ok">
+        <div class="title">With async</div>
+<pre><span class="k">async function</span> <span class="fn">greet</span>() {
+  <span class="k">return</span> <span class="s">"hello"</span>;
+}
+<span class="c">// returns: Promise { "hello" }</span></pre>
+      </div>
+    </div>
+
+    <div class="label">The single-threaded event loop — shown in output</div>
+    <p>This is the most important mental model. JavaScript runs one thing at a time, but when it hits an async operation it does not sit and wait — it moves on and comes back later. Watch the output order below:</p>
+
+    <div class="code-wrap">
+      <div class="file-label">event-loop-demo.js</div>
+<pre>console.<span class="m">log</span>(<span class="s">"[1] Script starts"</span>);
+
+<span class="fn">setTimeout</span>(() => {
+  console.<span class="m">log</span>(<span class="s">"[3] Inside setTimeout (runs last)"</span>);
+}, <span class="n">0</span>);  <span class="c">// 0ms — still async!</span>
+
+console.<span class="m">log</span>(<span class="s">"[2] Script ends (runs before setTimeout)"</span>);</pre>
+    </div>
+
+    <div class="output-wrap">
+      <div class="file-label">▶ Console output</div>
+<pre>[1] Script starts
+[2] Script ends (runs before setTimeout)
+[3] Inside setTimeout (runs last)</pre>
+    </div>
+
+    <div class="callout warn">
+      <span class="icon">🔑</span>
+      <p><strong>The key insight:</strong> even <code>setTimeout(..., 0)</code> goes to the back of the queue. JavaScript finishes all synchronous code first, then processes queued async callbacks. <em>This ordering is the entire point of the event loop.</em></p>
+    </div>
+
+    <div class="label">Declaring an async function</div>
+    <div class="code-wrap">
+      <div class="file-label">async-function.js</div>
+<pre><span class="c">// All four forms are valid</span>
+<span class="k">async function</span> <span class="fn">named</span>() { ... }
+
+<span class="k">const</span> arrow = <span class="k">async</span> () => { ... };
+
+<span class="k">const</span> obj = {
+  <span class="k">async</span> <span class="fn">method</span>() { ... }
+};
+
+<span class="c">// Immediately invoked (common at module top-level)</span>
+(<span class="k">async</span> () => {
+  <span class="c">// await is allowed here</span>
+})();</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     4. await
+═══════════════════════════════════════════════════════ -->
+<section class="aw" id="await">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <h2>await</h2>
+    <span class="kw">const result = await promise</span>
+  </div>
+  <div class="section-body">
+
+    <p><strong><code>await</code></strong> pauses an <code>async</code> function until the Promise it is waiting for settles, then hands you the resolved value. Critically, it only pauses <em>that one function</em> — the rest of your program keeps running.</p>
+
+    <div class="label">Replacing .then() chains with await</div>
+    <div class="code-wrap">
+      <div class="file-label">await-example.js</div>
+<pre><span class="k">async function</span> <span class="fn">loadUserData</span>(id) {
+  <span class="k">const</span> user   = <span class="k">await</span> <span class="fn">fetchUser</span>(id);
+  <span class="k">const</span> orders = <span class="k">await</span> <span class="fn">fetchOrders</span>(user.id);
+  <span class="k">const</span> items  = <span class="k">await</span> <span class="fn">fetchItems</span>(orders[<span class="n">0</span>].id);
+
+  <span class="k">return</span> items;  <span class="c">// wrapped in a Promise automatically</span>
+}
+
+<span class="fn">loadUserData</span>(<span class="n">1</span>).<span class="m">then</span>(items => console.<span class="m">log</span>(items));</pre>
+    </div>
+
+    <p>This is the same three-step chain from both earlier examples — now it reads like synchronous code top-to-bottom, with none of the callback nesting.</p>
+
+    <div class="label">Error handling with try / catch</div>
+    <p>This is the big win: you can use the familiar <code>try/catch</code> syntax that works everywhere else in JavaScript.</p>
+
+    <div class="code-wrap">
+      <div class="file-label">await-try-catch.js</div>
+<pre><span class="k">async function</span> <span class="fn">loadUserData</span>(id) {
+  <span class="k">try</span> {
+    <span class="k">const</span> user = <span class="k">await</span> <span class="fn">fetchUser</span>(id);
+    <span class="k">const</span> orders = <span class="k">await</span> <span class="fn">fetchOrders</span>(user.id);
+    <span class="k">return</span> orders;
+  } <span class="k">catch</span> (err) {
+    <span class="c">// catches rejection from ANY of the awaits above</span>
+    console.<span class="m">error</span>(<span class="s">"Something failed:"</span>, err.<span class="m">message</span>);
+    <span class="k">return</span> [];  <span class="c">// return a safe default</span>
+  }
+}</pre>
+    </div>
+
+    <div class="label">Seeing it in the console — order matters</div>
+    <div class="code-wrap">
+      <div class="file-label">await-order-demo.js</div>
+<pre><span class="k">async function</span> <span class="fn">demo</span>() {
+  console.<span class="m">log</span>(<span class="s">"A — before await"</span>);
+
+  <span class="k">const</span> result = <span class="k">await new</span> <span class="fn">Promise</span>(res =>
+    <span class="fn">setTimeout</span>(() => res(<span class="s">"done"</span>), <span class="n">100</span>)
+  );
+
+  console.<span class="m">log</span>(<span class="s">"C — after await, result:"</span>, result);
+}
+
+<span class="fn">demo</span>();
+console.<span class="m">log</span>(<span class="s">"B — this runs while demo() is awaiting"</span>);</pre>
+    </div>
+
+    <div class="output-wrap">
+      <div class="file-label">▶ Console output</div>
+<pre>A — before await
+B — this runs while demo() is awaiting
+C — after await, result: done</pre>
+    </div>
+
+    <div class="callout info">
+      <span class="icon">💡</span>
+      <p><strong>Read the output, not the code order.</strong> <code>B</code> prints before <code>C</code> even though <code>B</code> is written after <code>demo()</code> is called. That gap between A and C is exactly where the event loop goes off and does other work. This is the single-threaded-but-not-frozen model in action.</p>
+    </div>
+
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <p><strong>Common mistake — sequential when you wanted parallel.</strong> If you write two <code>await</code>s in a row and neither depends on the other, they run one after the other, wasting time. Use <code>Promise.all</code> (next section) to run them simultaneously.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     5. Promise.all
+═══════════════════════════════════════════════════════ -->
+<section class="pa" id="all">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <h2>Promise.all</h2>
+    <span class="kw">Promise.all([p1, p2, p3])</span>
+  </div>
+  <div class="section-body">
+
+    <p><strong><code>Promise.all</code></strong> takes an array of Promises and runs them all at the same time. It waits until every single one has fulfilled, then resolves with an array of all their results — in the same order as the input, regardless of which finished first.</p>
+
+    <div class="label">The fail-fast rule — interview-critical</div>
+
+    <div class="callout danger">
+      <span class="icon">🚨</span>
+      <p><strong>One failure rejects everything.</strong> If any single Promise in the array rejects, <code>Promise.all</code> immediately rejects with that error — and you lose <em>all</em> the other results, even the ones that already succeeded. This is called fail-fast behaviour. If you need every result regardless of individual failures, use <code>Promise.allSettled</code> instead.</p>
+    </div>
+
+    <div class="compare">
+      <div class="compare-box ok">
+        <div class="title">Promise.all — all succeed</div>
+<pre>Promise.<span class="m">all</span>([p1✓, p2✓, p3✓])
+  → resolves: [r1, r2, r3]</pre>
+      </div>
+      <div class="compare-box bad">
+        <div class="title">Promise.all — one fails</div>
+<pre>Promise.<span class="m">all</span>([p1✓, p2✗, p3✓])
+  → rejects immediately with p2's error
+  → r1 and r3 are lost</pre>
+      </div>
+    </div>
+
+    <div class="label">Sequential vs parallel — the time difference</div>
+    <div class="code-wrap">
+      <div class="file-label">promise-all.js</div>
+<pre><span class="k">const</span> <span class="fn">delay</span> = (ms, val) =>
+  <span class="k">new</span> <span class="fn">Promise</span>(res => <span class="fn">setTimeout</span>(() => res(val), ms));
+
+<span class="c">// ✗ Sequential — takes 1500ms total (500 + 500 + 500)</span>
+<span class="k">async function</span> <span class="fn">sequential</span>() {
+  <span class="k">const</span> a = <span class="k">await</span> <span class="fn">delay</span>(<span class="n">500</span>, <span class="s">"users"</span>);
+  <span class="k">const</span> b = <span class="k">await</span> <span class="fn">delay</span>(<span class="n">500</span>, <span class="s">"posts"</span>);
+  <span class="k">const</span> c = <span class="k">await</span> <span class="fn">delay</span>(<span class="n">500</span>, <span class="s">"comments"</span>);
+  <span class="k">return</span> [a, b, c];
+}
+
+<span class="c">// ✓ Parallel — takes ~500ms total (all run at once)</span>
+<span class="k">async function</span> <span class="fn">parallel</span>() {
+  <span class="k">const</span> [a, b, c] = <span class="k">await</span> Promise.<span class="m">all</span>([
+    <span class="fn">delay</span>(<span class="n">500</span>, <span class="s">"users"</span>),
+    <span class="fn">delay</span>(<span class="n">500</span>, <span class="s">"posts"</span>),
+    <span class="fn">delay</span>(<span class="n">500</span>, <span class="s">"comments"</span>),
+  ]);
+  <span class="k">return</span> [a, b, c];
+}
+
+<span class="c">// Promise.allSettled — get every result, never throws</span>
+<span class="k">async function</span> <span class="fn">safeParallel</span>() {
+  <span class="k">const</span> results = <span class="k">await</span> Promise.<span class="m">allSettled</span>([
+    <span class="fn">delay</span>(<span class="n">300</span>, <span class="s">"ok"</span>),
+    Promise.<span class="m">reject</span>(<span class="k">new</span> <span class="e">Error</span>(<span class="s">"failed"</span>)),
+    <span class="fn">delay</span>(<span class="n">100</span>, <span class="s">"also ok"</span>),
+  ]);
+
+  results.<span class="m">forEach</span>(r => {
+    <span class="k">if</span> (r.status === <span class="s">"fulfilled"</span>) console.<span class="m">log</span>(<span class="s">"✓"</span>, r.value);
+    <span class="k">if</span> (r.status === <span class="s">"rejected"</span>)  console.<span class="m">log</span>(<span class="s">"✗"</span>, r.reason.<span class="m">message</span>);
+  });
+}</pre>
+    </div>
+
+    <div class="output-wrap">
+      <div class="file-label">▶ safeParallel() console output</div>
+<pre><span class="out-muted">✓ ok</span>
+<span class="out-red">✗ failed</span>
+<span class="out-muted">✓ also ok</span></pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     6. Promise.race
+═══════════════════════════════════════════════════════ -->
+<section class="pr" id="race">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <h2>Promise.race</h2>
+    <span class="kw">Promise.race([p1, p2, p3])</span>
+  </div>
+  <div class="section-body">
+
+    <p><strong><code>Promise.race</code></strong> settles with whichever Promise settles first — fulfilled <em>or</em> rejected. The rest of the promises continue running in the background, but their results are discarded.</p>
+
+    <div class="callout danger">
+      <span class="icon">🚨</span>
+      <p><strong>Interview trap: it is not "the fastest successful one."</strong> <code>Promise.race</code> settles with the first to <em>settle</em>, and that includes rejections. If the fastest Promise rejects, <code>Promise.race</code> rejects too — even if every other Promise would have fulfilled a millisecond later. If you want the first to <em>succeed</em>, you need <code>Promise.any</code>, which ignores rejections and only resolves with the first fulfilled value.</p>
+    </div>
+
+    <div class="compare">
+      <div class="compare-box bad">
+        <div class="title">Promise.race — fastest rejects</div>
+<pre>race([
+  reject after 100ms,  <span class="c">// wins (fastest)</span>
+  resolve after 200ms,
+  resolve after 300ms
+])
+→ rejects at 100ms</pre>
+      </div>
+      <div class="compare-box ok">
+        <div class="title">Promise.any — first success wins</div>
+<pre>any([
+  reject after 100ms,  <span class="c">// ignored</span>
+  resolve after 200ms, <span class="c">// wins</span>
+  resolve after 300ms
+])
+→ resolves at 200ms</pre>
+      </div>
+    </div>
+
+    <div class="label">Primary use case — timeout wrapper</div>
+    <div class="code-wrap">
+      <div class="file-label">promise-race-timeout.js</div>
+<pre><span class="k">function</span> <span class="fn">withTimeout</span>(promise, ms) {
+  <span class="k">const</span> timeout = <span class="k">new</span> <span class="fn">Promise</span>((_, reject) =>
+    <span class="fn">setTimeout</span>(
+      () => reject(<span class="k">new</span> <span class="e">Error</span>(<span class="s">`Timed out after ${ms}ms`</span>)),
+      ms
+    )
+  );
+  <span class="k">return</span> Promise.<span class="m">race</span>([promise, timeout]);
+}
+
+<span class="k">async function</span> <span class="fn">main</span>() {
+  <span class="k">try</span> {
+    <span class="c">// fetchData takes 800ms — timeout at 500ms</span>
+    <span class="k">const</span> data = <span class="k">await</span> <span class="fn">withTimeout</span>(<span class="fn">fetchData</span>(), <span class="n">500</span>);
+    console.<span class="m">log</span>(<span class="s">"Data:"</span>, data);
+  } <span class="k">catch</span> (err) {
+    console.<span class="m">error</span>(err.<span class="m">message</span>);  <span class="c">// "Timed out after 500ms"</span>
+  }
+}</pre>
+    </div>
+
+    <div class="output-wrap">
+      <div class="file-label">▶ Console output (fetchData takes 800ms, timeout is 500ms)</div>
+<pre><span class="out-red">Timed out after 500ms</span></pre>
+    </div>
+
+    <div class="callout info">
+      <span class="icon">💡</span>
+      <p><strong>Quick reference — which one to use?</strong><br>
+      <code>Promise.all</code> — need every result, fail fast on any error.<br>
+      <code>Promise.allSettled</code> — need every result, even if some fail.<br>
+      <code>Promise.race</code> — first to settle (success or failure) wins.<br>
+      <code>Promise.any</code> — first to succeed wins; ignores rejections.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     Playwright tie-in
+═══════════════════════════════════════════════════════ -->
+<div class="pw-banner">
+  <h3>🎭 Why this matters in Playwright</h3>
+  <p>
+    Every line in a Playwright test that starts with <code>await</code> is exactly this machinery running.
+    When you write <code>await page.click('#submit')</code>, you are awaiting a Promise that resolves
+    once the browser confirms the click happened. When you write <code>await page.waitForSelector('.result')</code>,
+    you are racing against a timeout. And when you load multiple pages simultaneously in a test,
+    <code>Promise.all</code> is how you do it without tripling your test suite runtime. Understanding
+    this model is the difference between writing tests that you copied from a tutorial and being able
+    to explain — and debug — why they work.
+  </p>
+</div>
+
+</main>
+
+</body>
+</html>
