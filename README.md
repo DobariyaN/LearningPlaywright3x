@@ -112,7 +112,7 @@ npx playwright test 18_Async_Await/149_Example.spec.ts
 - [27 — TypeScript Enums](#27--typescript-enums)
 - [28 — TypeScript Generics](#28--typescript-generics)
 - [29 — TypeScript Access Modifiers](#29--typescript-access-modifiers)
-- [31 — TypeScript Abstract Classes](#31--typescript-abstract-classes)
+- [30 — TypeScript Abstract Classes](#30--typescript-abstract-classes)
 - [MCQ — Practice Questions](#mcq--practice-questions)
 - [IQ_Notes — Reference Library](#iq_notes--reference-library)
 
@@ -371,8 +371,7 @@ LearnPlaywright3x/
 │   ├── 213_PPP.ts                            # public vs private vs protected on an APIClient
 │   ├── 214_PageObjectModel.ts                # protected navigate() reused by LoginPage
 │   └── 215_Redaonly.ts                       # private readonly Playwright config
-├── 30_Typescript_Override_Decorator/         # planned: the @override decorator (empty for now)
-├── 31_Typescript_Abstract_Class/
+├── 30_Typescript_Abstract_Class/
 │   └── 216_Abstract.ts                       # abstract BaseTest lifecycle + concrete UITest
 ├── tsconfig.json                             # strict TS config for the .ts lessons
 ├── MCQ/
@@ -3606,7 +3605,7 @@ npx tsx 29_Typescript_PRIVATE_PUBLIC_PROTECTED/215_Redaonly.ts
 
 ---
 
-### 31 — TypeScript Abstract Classes
+### 30 — TypeScript Abstract Classes
 
 **Concept:** An `abstract class` is a base that cannot be instantiated. It mixes **abstract members** (a signature with no body, which every subclass must implement) with **concrete members** (real fields and methods the subclass inherits for free). It is the middle ground between an interface and a normal class.
 
@@ -3615,7 +3614,7 @@ npx tsx 29_Typescript_PRIVATE_PUBLIC_PROTECTED/215_Redaonly.ts
 **Q&A — why use this?**
 - **Q: When do I pick this over an `interface`?** A: When the base also carries **implementation**, a constructor, shared state, or a default method. An interface is pure contract and disappears at compile time; an abstract class emits a real class you can inherit from.
 - **Q: What does it replace?** A: A "base" class whose methods just `throw new Error("not implemented")` and only blow up at runtime. `abstract` moves that failure to compile time.
-- **Q: What's the gotcha?** A: `new BaseTest("x")` is a compile error, which is the whole point. And **every** abstract member must be implemented, including [`216_Abstract.ts`](31_Typescript_Abstract_Class/216_Abstract.ts)'s deliberately odd `abstract loan()`. Miss one and the subclass will not compile. Note the concrete `loan1()` next to it needs no implementation, since it already has a body.
+- **Q: What's the gotcha?** A: `new BaseTest("x")` is a compile error, which is the whole point. And **every** abstract member must be implemented, including [`216_Abstract.ts`](30_Typescript_Abstract_Class/216_Abstract.ts)'s deliberately odd `abstract loan()`. Miss one and the subclass will not compile. Note the concrete `loan1()` next to it needs no implementation, since it already has a body.
 
 ```mermaid
 flowchart TD
@@ -3649,7 +3648,7 @@ test.setup(); test.execute(); test.teardown();
 // const base = new BaseTest("x");   // compile error, cannot instantiate an abstract class
 ```
 
-> [`216_Abstract.ts`](31_Typescript_Abstract_Class/216_Abstract.ts) defines the classes but never instantiates `UITest`, so running it prints nothing. Add `new UITest("Login Flow").setup()` at the bottom to see it work.
+> [`216_Abstract.ts`](30_Typescript_Abstract_Class/216_Abstract.ts) defines the classes but never instantiates `UITest`, so running it prints nothing. Add `new UITest("Login Flow").setup()` at the bottom to see it work.
 
 | Compare | Abstract class | Interface |
 |---------|:--------------:|:---------:|
@@ -3659,7 +3658,7 @@ test.setup(); test.execute(); test.teardown();
 | A class can have many | ❌, one `extends` | ✅, many `implements` |
 
 ```bash
-npx tsx 31_Typescript_Abstract_Class/216_Abstract.ts
+npx tsx 30_Typescript_Abstract_Class/216_Abstract.ts
 ```
 
 ---
@@ -3727,8 +3726,7 @@ Concept explainers, generated on demand via the prompt template in [`IQ_Notes/RE
 | 27 | TypeScript Enums | String enums as closed vocabularies, enum-as-type, `switch` dispatch | ✅ |
 | 28 | TypeScript Generics | Type parameters `<T>`, generic classes, generic return shapes, `!` assertion | ✅ |
 | 29 | TypeScript Access Modifiers | `public` / `private` / `protected`, `readonly`, compile-time vs `#` runtime privacy | ✅ |
-| 30 | TypeScript Override Decorator | The `@override` decorator | 🚧 |
-| 31 | TypeScript Abstract Classes | `abstract` members, concrete members, abstract class vs interface | ✅ |
+| 30 | TypeScript Abstract Classes | `abstract` members, concrete members, abstract class vs interface | ✅ |
 | — | MCQ Practice | Array multiple-choice bank (more coming) | 🚧 |
 | — | IQ_Notes | Standalone concept references via prompt template | 🚧 |
 
